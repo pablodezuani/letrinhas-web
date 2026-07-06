@@ -84,15 +84,21 @@ export function Topbar() {
         {/* Command palette trigger */}
         <button
           onClick={openCommandPalette}
-          className="hidden sm:flex items-center gap-2 h-8 pl-3 pr-2 rounded-lg text-xs font-medium transition-colors hover:bg-black/[0.04]"
-          style={{ color: '#98A5AB', background: 'rgba(48,95,114,0.05)' }}
+          className="hidden sm:flex items-center gap-2 h-8 pl-3 pr-2.5 rounded-xl text-xs font-medium transition-all"
+          style={{
+            color: '#98A5AB',
+            background: 'rgba(48,95,114,0.05)',
+            border: '1px solid rgba(48,95,114,0.09)',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(48,95,114,0.09)')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(48,95,114,0.05)')}
           title="Buscar e navegar"
         >
           <Search className="h-3.5 w-3.5" />
           <span>Buscar...</span>
           <kbd
-            className="ml-1 px-1.5 py-0.5 rounded text-[10px] font-semibold"
-            style={{ background: 'rgba(48,95,114,0.08)', color: '#567B8B' }}
+            className="ml-1.5 px-1.5 py-0.5 rounded-md text-[10px] font-semibold"
+            style={{ background: 'rgba(48,95,114,0.1)', color: '#567B8B' }}
           >
             ⌘K
           </kbd>
@@ -122,7 +128,10 @@ export function Topbar() {
         {/* User chip */}
         <div
           className="hidden sm:flex items-center gap-2.5 px-3 py-1.5 rounded-xl"
-          style={{ background: 'rgba(48,95,114,0.05)' }}
+          style={{
+            background: 'rgba(48,95,114,0.05)',
+            border: '1px solid rgba(48,95,114,0.08)',
+          }}
         >
           <Avatar className="h-6 w-6">
             <AvatarFallback
@@ -139,10 +148,17 @@ export function Topbar() {
             <p className="text-xs font-semibold" style={{ color: '#1F4352' }}>
               {user?.name?.split(' ')[0]}
             </p>
-            <p className="text-[10px] mt-0.5" style={{ color: '#98A5AB' }}>
-              {user?.role === 'ADMIN' ? 'Admin' : 'Educador'}
-            </p>
           </div>
+          <span
+            className="px-1.5 py-0.5 rounded-md text-[10px] font-bold"
+            style={
+              user?.role === 'ADMIN'
+                ? { background: 'rgba(245,169,124,0.18)', color: '#C97840' }
+                : { background: 'rgba(48,95,114,0.1)', color: '#567B8B' }
+            }
+          >
+            {user?.role === 'ADMIN' ? 'Admin' : 'Edu'}
+          </span>
         </div>
 
         {/* Logout */}

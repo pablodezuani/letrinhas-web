@@ -1,8 +1,9 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { api } from '@/lib/api';
-import { DashboardMetrics, GAME_LABELS } from '@/lib/types';
+import { dashboardQuery } from '@/lib/queries';
+import type { DashboardMetrics } from '@/lib/types';
+import { GAME_LABELS } from '@/lib/types';
 import { useAuth } from '@/contexts/auth-context';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -31,11 +32,7 @@ const scoreColor = (pct: number) =>
 export default function DashboardPage() {
   const { user } = useAuth();
 
-  const { data: metrics, isLoading, isError } = useQuery<DashboardMetrics>({
-    queryKey: ['dashboard-metrics'],
-    queryFn: async () => (await api.get('/educator/dashboard')).data,
-    retry: 1,
-  });
+  const { data: metrics, isLoading, isError } = useQuery<DashboardMetrics>(dashboardQuery());
 
   const chartData = metrics?.sessionsByGame.map((g, i) => ({
     name: GAME_LABELS[g.gameType] ?? g.gameType,
