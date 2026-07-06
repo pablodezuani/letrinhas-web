@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useSidebar } from '@/contexts/sidebar-context';
 import { cn } from '@/lib/utils';
 import { NAV_GROUPS } from '@/lib/nav-items';
-import { Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Sparkles, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 export function Sidebar() {
@@ -15,8 +15,10 @@ export function Sidebar() {
   const { user } = useAuth();
   const { collapsed, toggle, mobileOpen, closeMobile } = useSidebar();
   const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const mq = window.matchMedia('(max-width: 1023px)');
     const update = () => setIsMobile(mq.matches);
     update();
@@ -24,9 +26,20 @@ export function Sidebar() {
     return () => mq.removeEventListener('change', update);
   }, []);
 
+  // Close on route change
   useEffect(() => {
     closeMobile();
   }, [pathname, closeMobile]);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobile && mobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isMobile, mobileOpen]);
 
   const groups = NAV_GROUPS
     .map((group) => ({
@@ -36,14 +49,19 @@ export function Sidebar() {
     .filter((group) => group.items.length > 0);
 
   const effectiveCollapsed = isMobile ? false : collapsed;
-  const width = isMobile ? 240 : collapsed ? 72 : 240;
+  const width = isMobile ? 260 : collapsed ? 72 : 240;
+
+  // Avoid hydration mismatch — don't render mobile-specific state until mounted
+  const isOpen = mounted && isMobile ? mobileOpen : false;
+  const showSidebar = !mounted || !isMobile || mobileOpen;
 
   return (
     <>
       {/* Mobile backdrop */}
-      {isMobile && mobileOpen && (
+      {mounted && isMobile && mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/30 lg:hidden"
+          className="fixed inset-0 z-40"
+          style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(2px)' }}
           onClick={closeMobile}
           aria-hidden
         />
@@ -51,18 +69,27 @@ export function Sidebar() {
 
       <aside
         className="flex flex-col flex-shrink-0 overflow-hidden"
+        aria-hidden={isMobile && !mobileOpen}
         style={{
-          width,
+          width: isMobile ? 260 : width,
           minHeight: isMobile ? undefined : '100vh',
-          height: isMobile ? '100vh' : undefined,
+          height: isMobile ? '100dvh' : undefined,
           position: isMobile ? 'fixed' : 'relative',
           top: 0,
           left: 0,
           zIndex: isMobile ? 50 : 'auto',
-          transform: isMobile ? `translateX(${mobileOpen ? '0' : '-100%'})` : 'none',
-          transition: 'width 220ms cubic-bezier(0.4, 0, 0.2, 1), transform 220ms cubic-bezier(0.4, 0, 0.2, 1)',
+          transform: mounted
+            ? isMobile
+              ? `translateX(${mobileOpen ? '0' : '-100%'})`
+              : 'none'
+            : 'none',
+          transition: mounted
+            ? 'width 220ms cubic-bezier(0.4,0,0.2,1), transform 280ms cubic-bezier(0.4,0,0.2,1)'
+            : 'none',
           background: 'linear-gradient(175deg, #0D2535 0%, #173345 40%, #1D4255 80%, #224E63 100%)',
           borderRight: '1px solid rgba(255,255,255,0.04)',
+          boxShadow: isMobile && mobileOpen ? '4px 0 32px rgba(0,0,0,0.35)' : 'none',
+          visibility: mounted && isMobile && !mobileOpen ? 'hidden' : 'visible',
         }}
       >
         {/* Top ambient glow */}
@@ -75,7 +102,7 @@ export function Sidebar() {
         />
 
         {/* Logo area */}
-        <div className="relative px-4 pt-6 pb-4 flex-shrink-0">
+        <div className="relative px-4 pt-5 pb-4 flex-shrink-0">
           <div className={cn('flex items-center', effectiveCollapsed ? 'justify-center' : 'gap-3')}>
             <div
               className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -99,6 +126,18 @@ export function Sidebar() {
                   Encantadas
                 </p>
               </div>
+            )}
+
+            {/* Mobile close button */}
+            {isMobile && (
+              <button
+                onClick={closeMobile}
+                className="ml-auto w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-white/[0.08] active:bg-white/[0.12]"
+                style={{ color: 'rgba(255,255,255,0.45)' }}
+                aria-label="Fechar menu"
+              >
+                <X className="h-4 w-4" />
+              </button>
             )}
           </div>
         </div>
@@ -133,7 +172,7 @@ export function Sidebar() {
                       className={cn(
                         'relative flex items-center rounded-xl text-sm font-medium transition-all duration-150 group',
                         effectiveCollapsed ? 'justify-center px-2 py-3' : 'gap-3 px-3 py-2.5',
-                        !active && 'hover:bg-white/[0.05]',
+                        !active && 'hover:bg-white/[0.05] active:bg-white/[0.08]',
                       )}
                       style={
                         active
@@ -142,7 +181,7 @@ export function Sidebar() {
                               color: '#F5A97C',
                               boxShadow: 'inset 0 0 0 1px rgba(245,169,124,0.18)',
                             }
-                          : { color: 'rgba(255,255,255,0.42)' }
+                          : { color: 'rgba(255,255,255,0.55)' }
                       }
                     >
                       {/* Left accent pill on active */}
@@ -216,7 +255,7 @@ export function Sidebar() {
             )}
           </div>
 
-          {/* Collapse toggle — desktop only, mobile uses drawer instead */}
+          {/* Collapse toggle — desktop only */}
           <button
             onClick={toggle}
             className={cn(

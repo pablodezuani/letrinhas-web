@@ -140,7 +140,7 @@ export default function DashboardPage() {
       )}
 
       {/* ── Stat cards — mosaico bento ───────────────────────────────── */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-5">
         {STAT_DEFS.map((def, i) => (
           <div
             key={def.key}

@@ -1,36 +1,106 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Letrinhas Encantadas — Painel Web
 
-## Getting Started
+Painel educacional para acompanhar o progresso de crianças com TEA (Transtorno do Espectro Autista) em jogos de alfabetização e linguagem.
 
-First, run the development server:
+## Sobre o projeto
+
+O **Letrinhas Encantadas** é uma plataforma composta por um aplicativo mobile (usado pelas crianças) e este painel web (usado por educadores e administradores). O painel permite:
+
+- Monitorar sessões de jogo em tempo real com gráficos e métricas
+- Gerenciar perfis detalhados de crianças, incluindo informações sobre rotina, comunicação, necessidades sensoriais e dados médicos
+- Gerenciar responsáveis e vincular crianças a eles
+- Administrar o banco de palavras utilizado nos jogos
+- Controlar o acesso de educadores à plataforma
+
+### Tipos de jogo monitorados
+
+| Chave | Nome |
+|---|---|
+| `READING` | Leitura |
+| `VOWELS` | Vogais |
+| `WORD_FORMATION` | Formação de Palavras |
+| `PHRASE_BUILDER` | Construção de Frases |
+
+### Perfis de acesso
+
+| Perfil | Acesso |
+|---|---|
+| `ADMIN` | Todas as telas, incluindo palavras e educadores |
+| `EDUCATOR` | Dashboard, relatórios, crianças e responsáveis |
+| `PARENT` | Apenas o aplicativo mobile |
+
+## Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **UI**: React 19 + Tailwind CSS v4 + shadcn/ui
+- **Estado / dados**: TanStack Query v5
+- **Formulários**: React Hook Form + Zod
+- **Gráficos**: Recharts
+- **HTTP**: Axios com interceptors para JWT
+- **Notificações**: Sonner
+- **Linguagem**: TypeScript
+
+## Pré-requisitos
+
+- Node.js 20+
+- API backend rodando em `http://localhost:3333` (variável `NEXT_PUBLIC_API_URL`)
+
+## Instalação e execução
 
 ```bash
+# Instalar dependências
+npm install
+
+# Copiar variáveis de ambiente
+cp .env.example .env.local
+# Edite NEXT_PUBLIC_API_URL se o backend estiver em outro endereço
+
+# Iniciar em modo de desenvolvimento
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+O painel ficará disponível em [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Variáveis de ambiente
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variável | Padrão | Descrição |
+|---|---|---|
+| `NEXT_PUBLIC_API_URL` | `http://localhost:3333` | URL base da API backend |
 
-## Learn More
+## Scripts
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run dev    # Servidor de desenvolvimento (webpack)
+npm run build  # Build de produção (webpack)
+npm start      # Servidor de produção
+npm run lint   # ESLint
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Estrutura de pastas
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+app/
+  (dashboard)/         # Rotas protegidas (layout com sidebar)
+    dashboard/         # Visão geral com métricas e gráficos
+    children/          # Listagem de crianças
+    responsaveis/      # Listagem e detalhes de responsáveis
+    educators/         # Gestão de educadores (admin)
+    words/             # Gestão de palavras dos jogos (admin)
+    reports/           # Relatórios de progresso
+  login/               # Tela de login pública
+  forgot-password/     # Recuperação de senha
+components/            # Componentes compartilhados e shadcn/ui
+contexts/              # AuthContext e outros providers
+lib/
+  api.ts               # Cliente Axios com interceptors JWT
+  types.ts             # Tipos TypeScript globais
+  nav-items.ts         # Configuração de navegação por perfil
+```
 
-## Deploy on Vercel
+## Autenticação
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+O token JWT é armazenado no `localStorage` (chave `letrinhas:token`) e enviado automaticamente em todas as requisições pelo interceptor do Axios. O middleware também verifica o token via cookie para proteção de rotas no servidor, redirecionando para `/login` quando ausente.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deploy
+
+O projeto está configurado para deploy na **Vercel** (`vercel.json`). Basta conectar o repositório e definir a variável `NEXT_PUBLIC_API_URL` apontando para o backend em produção.

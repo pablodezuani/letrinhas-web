@@ -41,11 +41,12 @@ export function Topbar() {
       <div className="flex items-center gap-3 min-w-0">
         <button
           onClick={toggleMobile}
-          className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors hover:bg-black/[0.05] lg:hidden"
+          className="flex items-center justify-center w-9 h-9 rounded-xl transition-colors hover:bg-black/[0.06] active:bg-black/[0.1] lg:hidden"
           style={{ color: '#305F72' }}
+          aria-label="Abrir menu"
           title="Abrir menu"
         >
-          <Menu className="h-4 w-4" />
+          <Menu className="h-5 w-5" />
         </button>
 
         <nav className="flex items-center gap-2 text-sm min-w-0">

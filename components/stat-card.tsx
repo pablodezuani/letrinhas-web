@@ -118,7 +118,7 @@ export function StatCard({
         </div>
 
         <p
-          className={`font-bold leading-none mb-1 animate-count-up ${hero ? 'text-[2.5rem]' : 'text-[2rem]'}`}
+          className={`font-bold leading-none mb-1 animate-count-up ${hero ? 'text-[2rem] sm:text-[2.5rem]' : 'text-[1.75rem] sm:text-[2rem]'}`}
           style={{ color: '#1F4352' }}
         >
           {typeof value === 'number' ? <AnimatedNumber value={value} /> : value}

@@ -36,7 +36,7 @@ export default function ChildDetailPage() {
       <div className="space-y-6 animate-pulse">
         <div className="h-5 w-32 rounded" style={{ background: '#F6EEE6' }} />
         <div className="bg-white rounded-2xl p-6 h-28" style={{ background: '#F6EEE6' }} />
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="bg-white rounded-2xl h-24" style={{ background: '#F6EEE6' }} />
           ))}
