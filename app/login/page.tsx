@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { Sparkles, Eye, EyeOff, BookOpen, Star } from 'lucide-react';
 import Link from 'next/link';
 
+<<<<<<< HEAD
 const FLOATING_LETTERS = [
   { char: 'A', x: '12%',  y: '18%', delay: '0s',    size: 52, rotate: -8,  duration: '4.6s' },
   { char: 'B', x: '72%',  y: '12%', delay: '0.7s',  size: 40, rotate: 10,  duration: '5.2s' },
@@ -18,6 +19,13 @@ const FLOATING_LETTERS = [
   { char: 'Z', x: '42%',  y: '30%', delay: '0.4s',  size: 32, rotate: 6,   duration: '5.8s' },
   { char: 'M', x: '65%',  y: '35%', delay: '1.1s',  size: 38, rotate: -4,  duration: '4.4s' },
   { char: 'S', x: '30%',  y: '48%', delay: '2.5s',  size: 30, rotate: 9,   duration: '5.1s' },
+=======
+const LETTER_ROWS = [
+  ['A', 'B', 'C', 'D', 'E'],
+  ['F', 'G', 'H', 'I', 'J'],
+  ['K', 'L', 'M', 'N', 'O'],
+  ['P', 'Q', 'R', 'S', 'T'],
+>>>>>>> 396d3c9f9fc91ab9b83cf012b25767f0aea0fd09
 ];
 
 export default function LoginPage() {
@@ -44,9 +52,9 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex" style={{ background: '#FFF8F4' }}>
 
-      {/* ── Left panel: illustration ─────────────────────────────── */}
+      {/* ── Left panel ─────────────────────────────────────────────── */}
       <div
-        className="hidden lg:flex flex-col justify-between w-[44%] p-12 relative overflow-hidden"
+        className="hidden lg:flex flex-col w-[44%] p-12 relative overflow-hidden"
         style={{ background: 'linear-gradient(150deg, #0D2535 0%, #173345 35%, #1D4255 65%, #224E63 100%)' }}
       >
         {/* Ambient glows */}
@@ -58,6 +66,7 @@ export default function LoginPage() {
           }}
         />
 
+<<<<<<< HEAD
         {/* Floating letter bubbles */}
         {FLOATING_LETTERS.map(({ char, x, y, delay, size, rotate, duration }) => (
           <div
@@ -82,8 +91,10 @@ export default function LoginPage() {
           </div>
         ))}
 
+=======
+>>>>>>> 396d3c9f9fc91ab9b83cf012b25767f0aea0fd09
         {/* Logo */}
-        <div className="relative flex items-center gap-3 z-10">
+        <div className="relative flex items-center gap-3 z-10 flex-shrink-0">
           <div
             className="w-10 h-10 rounded-2xl flex items-center justify-center"
             style={{ background: 'rgba(245,169,124,0.2)', border: '1px solid rgba(245,169,124,0.3)' }}
@@ -96,10 +107,37 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Hero text */}
-        <div className="relative z-10">
-          {/* Decorative tags */}
-          <div className="flex items-center gap-2 mb-6">
+        {/* Letter grid */}
+        <div className="relative z-10 flex-1 flex flex-col items-center justify-center gap-3">
+          {LETTER_ROWS.map((row, rowIdx) => (
+            <div
+              key={rowIdx}
+              className="flex gap-3"
+              style={{ transform: rowIdx % 2 === 1 ? 'translateX(28px)' : 'none' }}
+            >
+              {row.map((letter, colIdx) => (
+                <div
+                  key={letter}
+                  className="w-11 h-11 rounded-xl flex items-center justify-center text-base font-bold select-none pointer-events-none animate-float-letter"
+                  style={{
+                    animationDelay: `${(rowIdx * 5 + colIdx) * 120}ms`,
+                    animationDuration: `${3.5 + ((rowIdx * 5 + colIdx) % 3) * 0.5}s`,
+                    background: 'rgba(255,255,255,0.07)',
+                    color: 'rgba(255,255,255,0.6)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    backdropFilter: 'blur(4px)',
+                  }}
+                >
+                  {letter}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+
+        {/* Bottom text */}
+        <div className="relative z-10 flex-shrink-0">
+          <div className="flex items-center gap-2 mb-5">
             <span
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
               style={{ background: 'rgba(245,169,124,0.2)', color: '#FAC7A6' }}
@@ -115,50 +153,13 @@ export default function LoginPage() {
               Educacional
             </span>
           </div>
-
-          <h2 className="text-[2rem] font-bold text-white leading-snug mb-4">
+          <h2 className="text-[2rem] font-bold text-white leading-snug mb-3">
             Acompanhe a evolução<br />
             <span style={{ color: '#F5A97C' }}>de cada criança</span>
           </h2>
-          <p className="text-sm leading-relaxed max-w-xs" style={{ color: 'rgba(255,255,255,0.55)' }}>
-            Painel educacional para monitorar o progresso, gerenciar conteúdos e apoiar o desenvolvimento de crianças com TEA.
+          <p className="text-sm leading-relaxed max-w-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>
+            Painel educacional para monitorar o progresso e apoiar o desenvolvimento de crianças com TEA.
           </p>
-
-          {/* Testimonial */}
-          <div
-            className="mt-8 p-4 rounded-2xl"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}
-          >
-            <p className="text-sm italic leading-relaxed" style={{ color: 'rgba(255,255,255,0.7)' }}>
-              "Conseguimos acompanhar o progresso de cada aluno de forma muito mais clara e personalizada."
-            </p>
-            <div className="flex items-center gap-2.5 mt-3">
-              <div
-                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                style={{ background: 'linear-gradient(135deg, #CBAACB, #F5A97C)' }}
-              >
-                A
-              </div>
-              <div>
-                <p className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.8)' }}>Ana Paula</p>
-                <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>Educadora especialista</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom dots */}
-        <div className="relative z-10 flex gap-2">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="h-1 rounded-full"
-              style={{
-                width: i === 1 ? 28 : 10,
-                background: i === 1 ? '#F5A97C' : 'rgba(255,255,255,0.2)',
-              }}
-            />
-          ))}
         </div>
       </div>
 

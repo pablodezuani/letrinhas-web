@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { api } from '@/lib/api';
-import { Child } from '@/lib/types';
+import { childrenQuery } from '@/lib/queries';
+import type { Child } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import { Search, GamepadIcon, ChevronRight, Users, Sparkles } from 'lucide-react';
 import Link from 'next/link';
@@ -23,18 +23,10 @@ const avatarColors = [
 export default function ChildrenPage() {
   const [search, setSearch] = useState('');
 
-  const { data: children = [], isLoading } = useQuery<Child[]>({
-    queryKey: ['educator-children', search],
-    queryFn: async () => {
-      const { data } = await api.get('/educator/children', {
-        params: search ? { search } : undefined,
-      });
-      return data;
-    },
-  });
+  const { data: children = [], isLoading } = useQuery<Child[]>(childrenQuery(search));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-page-enter">
       <PageHeader title="Crianças" description="Perfis cadastrados no aplicativo" badge={children.length} />
 
       {/* Mini stat strip */}

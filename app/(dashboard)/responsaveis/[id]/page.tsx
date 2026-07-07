@@ -2,8 +2,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
-import { api } from '@/lib/api';
-import { ParentDetail } from '@/lib/types';
+import { parentDetailQuery } from '@/lib/queries';
+import type { ParentDetail } from '@/lib/types';
 import { formatDistanceToNow, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ArrowLeft, Mail, Calendar, GamepadIcon, ChevronRight, Users } from 'lucide-react';
@@ -27,13 +27,7 @@ const teaLevelColors: Record<string, { bg: string; text: string }> = {
 export default function ResponsavelDetailPage() {
   const { id } = useParams<{ id: string }>();
 
-  const { data, isLoading } = useQuery<ParentDetail>({
-    queryKey: ['parent-detail', id],
-    queryFn: async () => {
-      const { data } = await api.get(`/educator/parents/${id}`);
-      return data;
-    },
-  });
+  const { data, isLoading } = useQuery<ParentDetail>(parentDetailQuery(id));
 
   if (isLoading) {
     return (

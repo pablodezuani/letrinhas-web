@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { api } from '@/lib/api';
-import { Child, GameSession, GAME_LABELS } from '@/lib/types';
+import { childrenQuery, childSessionsQuery } from '@/lib/queries';
+import type { Child, GameSession } from '@/lib/types';
+import { GAME_LABELS } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -29,22 +30,10 @@ export default function ReportsPage() {
   const [selectedChild, setSelectedChild] = useState('');
   const [gameFilter, setGameFilter] = useState('');
 
-  const { data: children = [] } = useQuery<Child[]>({
-    queryKey: ['educator-children'],
-    queryFn: async () => {
-      const { data } = await api.get('/educator/children');
-      return data;
-    },
-  });
+  const { data: children = [] } = useQuery<Child[]>(childrenQuery());
 
   const { data: sessions = [], isLoading } = useQuery<GameSession[]>({
-    queryKey: ['all-sessions', selectedChild],
-    queryFn: async () => {
-      if (!selectedChild) return [];
-      const { data } = await api.get(`/children/${selectedChild}/sessions`);
-      return data;
-    },
-    enabled: !!selectedChild,
+    ...childSessionsQuery(selectedChild),
   });
 
   const filtered = sessions.filter((s) => !gameFilter || s.gameType === gameFilter);
@@ -68,7 +57,7 @@ export default function ReportsPage() {
     : 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-page-enter">
       <PageHeader title="Relatórios" description="Histórico detalhado por criança" />
 
       <div className="grid gap-6 lg:grid-cols-4">

@@ -2,15 +2,15 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { api } from '@/lib/api';
-import { Parent } from '@/lib/types';
+import { parentsQuery } from '@/lib/queries';
+import type { Parent } from '@/lib/types';
 import { Input } from '@/components/ui/input';
-import { Search, Mail, Baby, Contact, ChevronRight } from 'lucide-react';
+import { Search, Baby, Contact, ChevronRight, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { PageHeader } from '@/components/page-header';
-import { EmptyState } from '@/components/empty-state';
+import { DataTable, type TableColumn } from '@/components/data-table';
 
 const avatarGradients = [
   'linear-gradient(135deg, #305F72, #567B8B)',
@@ -23,18 +23,70 @@ const avatarGradients = [
 export default function ResponsaveisPage() {
   const [search, setSearch] = useState('');
 
-  const { data: parents = [], isLoading } = useQuery<Parent[]>({
-    queryKey: ['parents', search],
-    queryFn: async () => {
-      const { data } = await api.get('/educator/parents', {
-        params: search ? { search } : undefined,
-      });
-      return data;
+  const { data: parents = [], isLoading } = useQuery<Parent[]>(parentsQuery(search));
+
+  const columns: TableColumn<Parent>[] = [
+    {
+      header: 'Responsável',
+      render: (parent, idx) => (
+        <div className="flex items-center gap-3">
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
+            style={{ background: avatarGradients[idx % avatarGradients.length] }}
+          >
+            {parent.name.charAt(0).toUpperCase()}
+          </div>
+          <div className="min-w-0">
+            <p className="font-semibold truncate" style={{ color: '#1F4352' }}>{parent.name}</p>
+            <div className="flex items-center gap-1 mt-0.5">
+              <Mail className="h-3 w-3 flex-shrink-0" style={{ color: '#C2C8CB' }} />
+              <p className="text-xs truncate" style={{ color: '#98A5AB' }}>{parent.email}</p>
+            </div>
+          </div>
+        </div>
+      ),
     },
-  });
+    {
+      header: 'Crianças',
+      hideOnMobile: true,
+      headerClassName: 'w-28',
+      className: 'w-28',
+      render: (parent) => (
+        <span
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+          style={{ background: 'rgba(48,95,114,0.07)', color: '#567B8B' }}
+        >
+          <Baby className="h-3 w-3" />
+          {parent._count?.children ?? 0}
+        </span>
+      ),
+    },
+    {
+      header: 'Cadastro',
+      hideOnMobile: true,
+      headerClassName: 'w-36',
+      className: 'w-36',
+      render: (parent) =>
+        parent.created_at ? (
+          <span className="text-xs" style={{ color: '#98A5AB' }}>
+            {formatDistanceToNow(new Date(parent.created_at), { addSuffix: true, locale: ptBR })}
+          </span>
+        ) : (
+          <span style={{ color: '#C2C8CB' }}>—</span>
+        ),
+    },
+    {
+      header: '',
+      headerClassName: 'w-10',
+      className: 'w-10 text-right',
+      render: () => (
+        <ChevronRight className="h-4 w-4 inline-block transition-transform group-hover:translate-x-0.5" style={{ color: '#C2C8CB' }} />
+      ),
+    },
+  ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-page-enter">
       <PageHeader
         title="Responsáveis"
         description="Pais e responsáveis cadastrados no aplicativo"
@@ -45,72 +97,29 @@ export default function ResponsaveisPage() {
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: '#98A5AB' }} />
         <Input
           placeholder="Buscar por nome ou e-mail..."
-          className="pl-10 h-10 rounded-xl border-0 bg-white shadow-sm ring-1 text-sm"
-          style={{ '--tw-ring-color': 'rgba(48,95,114,0.12)' } as React.CSSProperties}
+          className="pl-10 h-10 rounded-xl border-0 bg-white text-sm"
+          style={{ boxShadow: 'var(--shadow-xs)', border: '1px solid rgba(48,95,114,0.1)' }}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
       </div>
 
-      {isLoading ? (
-        <div className="grid gap-3 sm:grid-cols-2">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-white rounded-2xl h-20 animate-pulse" style={{ background: '#F6EEE6' }} />
-          ))}
-        </div>
-      ) : parents.length === 0 ? (
-        <EmptyState
-          icon={search ? Search : Contact}
-          title={search ? 'Nenhum responsável encontrado' : 'Nenhum responsável cadastrado'}
-          description={search ? 'Tente buscar por outro nome ou e-mail' : 'Responsáveis aparecem aqui assim que se cadastram no aplicativo'}
-        />
-      ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
-          {parents.map((parent, idx) => (
-            <Link key={parent.id} href={`/responsaveis/${parent.id}`}>
-              <div
-                className="bg-white rounded-2xl p-5 ring-1 flex items-center gap-4 hover:shadow-md transition-all duration-200 cursor-pointer group"
-                style={{ '--tw-ring-color': 'rgba(48,95,114,0.08)' } as React.CSSProperties}
-              >
-                <div
-                  className="w-11 h-11 rounded-xl flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
-                  style={{ background: avatarGradients[idx % avatarGradients.length] }}
-                >
-                  {parent.name.charAt(0).toUpperCase()}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold truncate" style={{ color: '#1F4352' }}>{parent.name}</p>
-                  <div className="flex items-center gap-1 mt-0.5">
-                    <Mail className="h-3 w-3 flex-shrink-0" style={{ color: '#98A5AB' }} />
-                    <p className="text-xs truncate" style={{ color: '#6B7F88' }}>{parent.email}</p>
-                  </div>
-                </div>
-
-                <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                  <span
-                    className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium"
-                    style={{ background: 'rgba(48,95,114,0.06)', color: '#567B8B' }}
-                  >
-                    <Baby className="h-3 w-3" />
-                    {parent._count?.children ?? 0}
-                  </span>
-                  {parent.created_at && (
-                    <p className="text-xs hidden sm:block" style={{ color: '#98A5AB' }}>
-                      {formatDistanceToNow(new Date(parent.created_at), { addSuffix: true, locale: ptBR })}
-                    </p>
-                  )}
-                </div>
-
-                <ChevronRight
-                  className="h-4 w-4 flex-shrink-0 transition-transform group-hover:translate-x-0.5"
-                  style={{ color: '#C2C8CB' }}
-                />
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
+      <DataTable<Parent>
+        columns={columns}
+        data={parents}
+        isLoading={isLoading}
+        keyExtractor={(p) => p.id}
+        emptyIcon={Contact}
+        emptyTitle={search ? 'Nenhum responsável encontrado' : 'Nenhum responsável cadastrado'}
+        emptyDescription={
+          search
+            ? 'Tente buscar por outro nome ou e-mail'
+            : 'Responsáveis aparecem aqui assim que se cadastram no aplicativo'
+        }
+        onRowClick={(parent) => {
+          window.location.href = `/responsaveis/${parent.id}`;
+        }}
+      />
     </div>
   );
 }
