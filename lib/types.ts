@@ -1,12 +1,22 @@
 export type UserRole = 'PARENT' | 'EDUCATOR' | 'ADMIN';
+export type UserStatus = 'ACTIVE' | 'BLOCKED' | 'INACTIVE';
 
 export interface User {
   id: string;
   name: string;
   email: string;
   role: UserRole;
+  cpf?: string | null;
+  photo?: string | null;
+  status?: UserStatus;
   created_at?: string;
 }
+
+export const STATUS_LABELS: Record<string, string> = {
+  ACTIVE: 'Ativo',
+  BLOCKED: 'Bloqueado',
+  INACTIVE: 'Inativo',
+};
 
 export interface Parent extends User {
   _count?: { children: number };
