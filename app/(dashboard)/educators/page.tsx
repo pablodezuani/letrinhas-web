@@ -79,6 +79,7 @@ function EducatorAvatar({ educator, idx }: { educator: User; idx: number }) {
     </div>
   );
 }
+//dados
 
 function EducatorForm({
   initial, mode, onSave, loading,
