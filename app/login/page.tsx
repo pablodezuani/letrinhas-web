@@ -10,14 +10,14 @@ import { Sparkles, Eye, EyeOff, BookOpen, Star } from 'lucide-react';
 import Link from 'next/link';
 
 const FLOATING_LETTERS = [
-  { char: 'A', x: '12%',  y: '18%', delay: '0s',    size: 52, rotate: -8 },
-  { char: 'B', x: '72%',  y: '12%', delay: '0.7s',  size: 40, rotate: 10 },
-  { char: 'C', x: '82%',  y: '52%', delay: '1.4s',  size: 48, rotate: -5 },
-  { char: 'D', x: '18%',  y: '72%', delay: '2.1s',  size: 36, rotate: 8 },
-  { char: 'E', x: '55%',  y: '78%', delay: '1.8s',  size: 44, rotate: -12 },
-  { char: 'Z', x: '42%',  y: '30%', delay: '0.4s',  size: 32, rotate: 6 },
-  { char: 'M', x: '65%',  y: '35%', delay: '1.1s',  size: 38, rotate: -4 },
-  { char: 'S', x: '30%',  y: '48%', delay: '2.5s',  size: 30, rotate: 9 },
+  { char: 'A', x: '12%',  y: '18%', delay: '0s',    size: 52, rotate: -8,  duration: '4.6s' },
+  { char: 'B', x: '72%',  y: '12%', delay: '0.7s',  size: 40, rotate: 10,  duration: '5.2s' },
+  { char: 'C', x: '82%',  y: '52%', delay: '1.4s',  size: 48, rotate: -5,  duration: '4.9s' },
+  { char: 'D', x: '18%',  y: '72%', delay: '2.1s',  size: 36, rotate: 8,   duration: '5.5s' },
+  { char: 'E', x: '55%',  y: '78%', delay: '1.8s',  size: 44, rotate: -12, duration: '4.3s' },
+  { char: 'Z', x: '42%',  y: '30%', delay: '0.4s',  size: 32, rotate: 6,   duration: '5.8s' },
+  { char: 'M', x: '65%',  y: '35%', delay: '1.1s',  size: 38, rotate: -4,  duration: '4.4s' },
+  { char: 'S', x: '30%',  y: '48%', delay: '2.5s',  size: 30, rotate: 9,   duration: '5.1s' },
 ];
 
 export default function LoginPage() {
@@ -59,7 +59,7 @@ export default function LoginPage() {
         />
 
         {/* Floating letter bubbles */}
-        {FLOATING_LETTERS.map(({ char, x, y, delay, size, rotate }) => (
+        {FLOATING_LETTERS.map(({ char, x, y, delay, size, rotate, duration }) => (
           <div
             key={char}
             className="absolute flex items-center justify-center rounded-2xl font-bold select-none pointer-events-none animate-float-letter"
@@ -70,7 +70,7 @@ export default function LoginPage() {
               height: size,
               fontSize: size * 0.48,
               animationDelay: delay,
-              animationDuration: `${4 + Math.random() * 2}s`,
+              animationDuration: duration,
               background: 'rgba(255,255,255,0.07)',
               color: 'rgba(255,255,255,0.55)',
               border: '1px solid rgba(255,255,255,0.1)',

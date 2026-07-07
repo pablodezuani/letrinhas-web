@@ -88,7 +88,7 @@ export default function DashboardPage() {
             className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
             style={{ background: 'rgba(245,169,124,0.18)', border: '1px solid rgba(245,169,124,0.28)' }}
           >
-            <Sparkles className="h-5 w-5 animate-sparkle" style={{ color: '#F5A97C' }} />
+            <Sparkles className="h-5 w-5" style={{ color: '#F5A97C' }} />
           </div>
 
           <div className="flex-1 min-w-0">

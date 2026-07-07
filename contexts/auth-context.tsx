@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       role: data.role,
     }));
 
-    // cookie para o middleware de proteção de rotas
+
     document.cookie = `letrinhas:token=${data.token}; path=/; max-age=${60 * 60 * 24 * 30}`;
 
     setUser({ id: data.id, name: data.name, email: data.email, role: data.role });

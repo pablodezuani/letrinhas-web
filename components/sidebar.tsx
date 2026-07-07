@@ -85,7 +85,7 @@ export function Sidebar() {
                 boxShadow: '0 0 12px rgba(245,169,124,0.15)',
               }}
             >
-              <Sparkles className="w-4 h-4 animate-sparkle" style={{ color: '#F5A97C' }} />
+              <Sparkles className="w-4 h-4" style={{ color: '#F5A97C' }} />
             </div>
             {!effectiveCollapsed && (
               <div style={{ overflow: 'hidden' }}>

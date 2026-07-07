@@ -106,7 +106,7 @@ export function CommandPalette() {
       <DialogPrimitive.Portal>
         <DialogPrimitive.Backdrop className="fixed inset-0 z-50 bg-black/30 backdrop-blur-[2px] data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0" />
         <DialogPrimitive.Popup
-          className="fixed left-1/2 top-[14%] z-50 w-full max-w-lg -translate-x-1/2 overflow-hidden rounded-2xl bg-white outline-none data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0"
+          className="fixed left-1/2 top-[14%] z-50 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 overflow-hidden rounded-2xl bg-white outline-none data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0"
           style={{ boxShadow: '0 24px 64px rgba(13,37,53,0.28)' }}
           onKeyDown={handleKeyDown}
         >

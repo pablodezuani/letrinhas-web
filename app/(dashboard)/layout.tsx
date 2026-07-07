@@ -24,13 +24,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#FFF8F4' }}>
         <div className="flex flex-col items-center gap-5">
           <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center animate-soft-pulse"
+            className="w-14 h-14 rounded-2xl flex items-center justify-center"
             style={{
               background: 'linear-gradient(135deg, #1F4352, #305F72, #CBAACB)',
               boxShadow: '0 8px 24px rgba(48,95,114,0.3)',
             }}
           >
-            <Sparkles className="h-6 w-6 text-white animate-sparkle" />
+            <Sparkles className="h-6 w-6 text-white" />
           </div>
           <p className="text-sm font-medium" style={{ color: '#6B7F88' }}>Carregando...</p>
         </div>
