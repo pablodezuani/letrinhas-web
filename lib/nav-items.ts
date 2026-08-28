@@ -5,6 +5,8 @@ import {
   GraduationCap,
   BarChart3,
   Contact,
+  School,
+  MessageSquare,
 } from 'lucide-react';
 import type { UserRole } from '@/lib/types';
 
@@ -26,6 +28,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['EDUCATOR', 'ADMIN'] },
       { href: '/reports', label: 'Relatórios', icon: BarChart3, roles: ['EDUCATOR', 'ADMIN'] },
+      { href: '/messages', label: 'Mensagens', icon: MessageSquare, roles: ['EDUCATOR', 'ADMIN'] },
     ],
   },
   {
@@ -33,6 +36,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: '/children', label: 'Crianças', icon: Users, roles: ['EDUCATOR', 'ADMIN'] },
       { href: '/responsaveis', label: 'Responsáveis', icon: Contact, roles: ['EDUCATOR', 'ADMIN'] },
+      { href: '/school', label: 'Escola', icon: School, roles: ['ADMIN'] },
       { href: '/words', label: 'Palavras', icon: BookOpen, roles: ['ADMIN'] },
       { href: '/educators', label: 'Educadores', icon: GraduationCap, roles: ['ADMIN'] },
     ],

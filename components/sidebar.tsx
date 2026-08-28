@@ -3,10 +3,12 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/auth-context';
 import { useSidebar } from '@/contexts/sidebar-context';
 import { cn } from '@/lib/utils';
 import { NAV_GROUPS } from '@/lib/nav-items';
+import { unreadCountQuery } from '@/lib/queries';
 import { Sparkles, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
@@ -16,6 +18,9 @@ export function Sidebar() {
   const { collapsed, toggle, mobileOpen, closeMobile } = useSidebar();
   const [isMobile, setIsMobile] = useState(false);
   const [mounted, setMounted] = useState(false);
+
+  const { data: unread } = useQuery({ ...unreadCountQuery(), enabled: !!user });
+  const unreadCount = unread?.count ?? 0;
 
   useEffect(() => {
     setMounted(true);
@@ -195,6 +200,18 @@ export function Sidebar() {
                       <Icon className="h-4 w-4 flex-shrink-0" />
 
                       {!effectiveCollapsed && <span className="truncate">{item.label}</span>}
+
+                      {item.href === '/messages' && unreadCount > 0 && (
+                        <span
+                          className={cn(
+                            'flex items-center justify-center text-[10px] font-bold rounded-full flex-shrink-0',
+                            effectiveCollapsed ? 'absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1' : 'ml-auto min-w-[18px] h-[18px] px-1',
+                          )}
+                          style={{ background: '#F5A97C', color: '#1F4352' }}
+                        >
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
+                      )}
 
                       {/* Collapsed tooltip */}
                       {effectiveCollapsed && (

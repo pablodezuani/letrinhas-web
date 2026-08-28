@@ -1,17 +1,154 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import { api } from '@/lib/api';
-import { ChildDetail, GAME_LABELS } from '@/lib/types';
+import { ChildDetail, GAME_LABELS, School } from '@/lib/types';
+import { useAuth } from '@/contexts/auth-context';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatDistanceToNow, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ArrowLeft, Clock, Trophy, CheckCircle2, GamepadIcon } from 'lucide-react';
+import {
+  ArrowLeft, Clock, Trophy, CheckCircle2, GamepadIcon,
+  School as SchoolIcon, GraduationCap, MapPin, ArrowRightLeft,
+} from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'sonner';
+import type { AxiosError } from 'axios';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
+import { SchoolPicker } from '@/components/school-picker';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+
+function SchoolEducatorCard({ id, child }: { id: string; child: ChildDetail['child'] }) {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [picking, setPicking] = useState(false);
+  const [pendingSchool, setPendingSchool] = useState<School | null>(null);
+
+  const canManage = user?.role === 'ADMIN';
+
+  const updateSchoolMutation = useMutation({
+    mutationFn: (schoolId: string | null) => api.patch(`/admin/children/${id}/school`, { schoolId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['child-detail', id] });
+      setPicking(false);
+      setPendingSchool(null);
+      toast.success('Unidade atualizada.');
+    },
+    onError: (err: unknown) => {
+      const msg = (err as AxiosError<{ error: string }>).response?.data?.error ?? 'Erro ao atualizar unidade.';
+      toast.error(msg);
+    },
+  });
+
+  const cardStyle = { '--tw-ring-color': 'rgba(48,95,114,0.08)' } as React.CSSProperties;
+
+  return (
+    <div className="bg-white rounded-2xl p-6 ring-1" style={cardStyle}>
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#98A5AB' }}>Unidade &amp; Educadora</p>
+        {canManage && child.school && !picking && (
+          <button
+            onClick={() => setPicking(true)}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold"
+            style={{ color: '#305F72' }}
+          >
+            <ArrowRightLeft className="h-3.5 w-3.5" /> Trocar unidade
+          </button>
+        )}
+      </div>
+
+      {picking ? (
+        <div className="space-y-3">
+          <SchoolPicker
+            excludeIds={child.school ? [child.school.id] : []}
+            onSelect={(school) => (child.school ? setPendingSchool(school) : updateSchoolMutation.mutate(school.id))}
+          />
+          <button onClick={() => setPicking(false)} className="text-xs" style={{ color: '#98A5AB' }}>Cancelar</button>
+        </div>
+      ) : child.school ? (
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(48,95,114,0.08)' }}>
+              <SchoolIcon className="h-5 w-5" style={{ color: '#305F72' }} />
+            </div>
+            <div>
+              <Link href={`/school/${child.school.id}`} className="text-sm font-semibold hover:underline" style={{ color: '#1F4352' }}>
+                {child.school.name}
+              </Link>
+              {(child.school.address || child.school.city) && (
+                <p className="text-xs flex items-center gap-1" style={{ color: '#98A5AB' }}>
+                  <MapPin className="h-3 w-3" />
+                  {[child.school.address, child.school.city, child.school.state].filter(Boolean).join(', ')}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="w-px h-8" style={{ background: 'rgba(48,95,114,0.1)' }} />
+            {child.educator ? (
+              <div className="flex items-center gap-2.5">
+                {child.educator.photo ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={child.educator.photo} alt="" className="w-9 h-9 rounded-xl object-cover" />
+                ) : (
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(203,170,203,0.18)' }}>
+                    <GraduationCap className="h-4 w-4" style={{ color: '#A988A9' }} />
+                  </div>
+                )}
+                <div>
+                  <p className="text-xs" style={{ color: '#98A5AB' }}>Educadora</p>
+                  <p className="text-sm font-medium" style={{ color: '#1F4352' }}>{child.educator.name}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="text-xs px-3 py-2 rounded-xl" style={{ background: 'rgba(233,180,76,0.12)', color: '#B98A2D' }}>
+                {canManage ? 'Sem educadora — atribua pela unidade' : 'Sem educadora responsável ainda'}
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <p className="text-sm" style={{ color: '#98A5AB' }}>Esta criança ainda não possui unidade vinculada.</p>
+          {canManage && (
+            <button
+              onClick={() => setPicking(true)}
+              className="text-xs font-semibold px-3.5 h-9 rounded-xl text-white flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg, #1F4352 0%, #305F72 50%, #567B8B 100%)' }}
+            >
+              Vincular unidade
+            </button>
+          )}
+        </div>
+      )}
+
+      <AlertDialog open={!!pendingSchool} onOpenChange={(o) => !o && setPendingSchool(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Trocar para {pendingSchool?.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              A educadora responsável atual será removida, já que ela pertence à unidade anterior. A comunicação com a educadora atual deixará de ficar disponível até uma nova ser atribuída.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => pendingSchool && updateSchoolMutation.mutate(pendingSchool.id)}>
+              Confirmar troca
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
 
 const gameColors: Record<string, string> = {
   READING: '#305F72',
@@ -86,7 +223,7 @@ export default function ChildDetailPage() {
             <div className="flex items-center gap-3 flex-wrap mb-1">
               <h1 className="text-xl font-bold" style={{ color: '#1F4352' }}>{child.name}</h1>
               {child.nickname && (
-                <span className="text-sm" style={{ color: '#98A5AB' }}>"{child.nickname}"</span>
+                <span className="text-sm" style={{ color: '#98A5AB' }}>&quot;{child.nickname}&quot;</span>
               )}
               {child.hasAutism === 'yes' && (
                 <span
@@ -121,6 +258,8 @@ export default function ChildDetailPage() {
           </div>
         </div>
       </div>
+
+      <SchoolEducatorCard id={id} child={child} />
 
       {/* Stats por jogo */}
       {gameStats.length > 0 && (

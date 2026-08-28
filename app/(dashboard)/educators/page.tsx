@@ -23,6 +23,7 @@ import {
 import {
   Search, Plus, GraduationCap, MoreHorizontal, Eye, Pencil,
   Lock, Unlock, PowerOff, Power, Trash2, ChevronLeft, ChevronRight,
+  School as SchoolIcon, X, Users,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
@@ -30,6 +31,8 @@ import { ptBR } from 'date-fns/locale';
 import type { AxiosError } from 'axios';
 import { PageHeader } from '@/components/page-header';
 import { DataTable, type TableColumn } from '@/components/data-table';
+import { SchoolPicker } from '@/components/school-picker';
+import Link from 'next/link';
 
 const PAGE_SIZE = 8;
 
@@ -166,6 +169,36 @@ function EducatorForm({
 }
 
 function EducatorDetail({ educator }: { educator: User }) {
+  const queryClient = useQueryClient();
+  const [picking, setPicking] = useState(false);
+
+  const linkedSchools = educator.educatorSchools ?? [];
+
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['educators'] });
+
+  const linkMutation = useMutation({
+    mutationFn: (schoolId: string) => api.post(`/admin/schools/${schoolId}/educators`, { educatorId: educator.id }),
+    onSuccess: () => {
+      invalidate();
+      setPicking(false);
+      toast.success('Unidade vinculada.');
+    },
+    onError: (err: unknown) => {
+      const msg = (err as AxiosError<{ error: string }>).response?.data?.error ?? 'Erro ao vincular unidade.';
+      toast.error(msg);
+    },
+  });
+
+  const unlinkMutation = useMutation({
+    mutationFn: (schoolId: string) => api.delete(`/admin/schools/${schoolId}/educators/${educator.id}`),
+    onSuccess: (res) => {
+      invalidate();
+      const affected = res.data?.affectedChildren ?? 0;
+      toast.success(affected > 0 ? `Unidade desvinculada. ${affected} criança(s) ficaram sem esta educadora.` : 'Unidade desvinculada.');
+    },
+    onError: () => toast.error('Erro ao desvincular unidade.'),
+  });
+
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-4">
@@ -191,6 +224,59 @@ function EducatorDetail({ educator }: { educator: User }) {
               {formatDistanceToNow(new Date(educator.created_at), { addSuffix: true, locale: ptBR })}
             </p>
           </div>
+        )}
+        <div>
+          <p className="text-xs" style={{ color: '#98A5AB' }}>Crianças atribuídas</p>
+          <p className="inline-flex items-center gap-1.5" style={{ color: '#1F4352' }}>
+            <Users className="h-3.5 w-3.5" /> {educator._count?.assignedChildren ?? 0}
+          </p>
+        </div>
+      </div>
+
+      <div className="pt-1" style={{ borderTop: '1px solid rgba(48,95,114,0.08)' }}>
+        <p className="text-xs font-semibold uppercase tracking-wide mt-4 mb-2.5" style={{ color: '#98A5AB' }}>Unidades vinculadas</p>
+
+        {linkedSchools.length === 0 && !picking && (
+          <p className="text-sm mb-2.5" style={{ color: '#98A5AB' }}>Nenhuma unidade vinculada ainda.</p>
+        )}
+
+        {linkedSchools.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-3">
+            {linkedSchools.map(({ school }) => (
+              <span
+                key={school.id}
+                className="inline-flex items-center gap-1.5 text-xs pl-2.5 pr-1.5 py-1 rounded-full font-medium"
+                style={{ background: 'rgba(48,95,114,0.08)', color: '#305F72' }}
+              >
+                <Link href={`/school/${school.id}`} className="hover:underline">{school.name}</Link>
+                <button
+                  onClick={() => unlinkMutation.mutate(school.id)}
+                  className="w-4 h-4 rounded-full flex items-center justify-center"
+                  style={{ background: 'rgba(48,95,114,0.12)' }}
+                >
+                  <X className="h-2.5 w-2.5" />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+
+        {picking ? (
+          <div className="space-y-2">
+            <SchoolPicker
+              excludeIds={linkedSchools.map((l) => l.school.id)}
+              onSelect={(school) => linkMutation.mutate(school.id)}
+            />
+            <button onClick={() => setPicking(false)} className="text-xs" style={{ color: '#98A5AB' }}>Cancelar</button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setPicking(true)}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold"
+            style={{ color: '#305F72' }}
+          >
+            <SchoolIcon className="h-3.5 w-3.5" /> Vincular unidade
+          </button>
         )}
       </div>
     </div>

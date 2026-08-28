@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { childrenQuery } from '@/lib/queries';
 import type { Child } from '@/lib/types';
 import { Input } from '@/components/ui/input';
-import { Search, GamepadIcon, ChevronRight, Users, Sparkles } from 'lucide-react';
+import { Search, GamepadIcon, ChevronRight, Users, Sparkles, School as SchoolIcon, SlidersHorizontal } from 'lucide-react';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -22,8 +22,11 @@ const avatarColors = [
 
 export default function ChildrenPage() {
   const [search, setSearch] = useState('');
+  const [unlinkedOnly, setUnlinkedOnly] = useState(false);
 
-  const { data: children = [], isLoading } = useQuery<Child[]>(childrenQuery(search));
+  const { data: allChildren = [], isLoading } = useQuery<Child[]>(childrenQuery(search));
+  const children = unlinkedOnly ? allChildren.filter((c) => !c.schoolId) : allChildren;
+  const unlinkedCount = allChildren.filter((c) => !c.schoolId).length;
 
   return (
     <div className="space-y-6 animate-page-enter">
@@ -75,16 +78,38 @@ export default function ChildrenPage() {
         </div>
       )}
 
-      {/* Search */}
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: '#98A5AB' }} />
-        <Input
-          placeholder="Buscar por nome..."
-          className="pl-10 h-10 rounded-xl border-0 bg-white shadow-sm ring-1 text-sm"
-          style={{ '--tw-ring-color': 'rgba(48,95,114,0.12)' } as React.CSSProperties}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      {/* Search + filtro */}
+      <div className="flex gap-3 flex-wrap items-center">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: '#98A5AB' }} />
+          <Input
+            placeholder="Buscar por nome..."
+            className="pl-10 h-10 rounded-xl border-0 bg-white shadow-sm ring-1 text-sm"
+            style={{ '--tw-ring-color': 'rgba(48,95,114,0.12)' } as React.CSSProperties}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <button
+          onClick={() => setUnlinkedOnly((v) => !v)}
+          className="flex items-center gap-2 h-10 px-3.5 rounded-xl text-sm font-medium transition-colors"
+          style={
+            unlinkedOnly
+              ? { background: '#305F72', color: '#fff' }
+              : { background: '#fff', color: '#6B7F88', boxShadow: 'inset 0 0 0 1px rgba(48,95,114,0.12)' }
+          }
+        >
+          <SlidersHorizontal className="h-3.5 w-3.5" />
+          Sem unidade
+          {unlinkedCount > 0 && (
+            <span
+              className="text-xs px-1.5 rounded-full font-semibold"
+              style={unlinkedOnly ? { background: 'rgba(255,255,255,0.25)' } : { background: 'rgba(48,95,114,0.08)' }}
+            >
+              {unlinkedCount}
+            </span>
+          )}
+        </button>
       </div>
 
       {/* Grid */}
@@ -104,9 +129,9 @@ export default function ChildrenPage() {
         </div>
       ) : children.length === 0 ? (
         <EmptyState
-          icon={Search}
-          title="Nenhuma criança encontrada"
-          description="Tente buscar por outro nome"
+          icon={unlinkedOnly ? SchoolIcon : Search}
+          title={unlinkedOnly ? 'Todas as crianças têm unidade' : 'Nenhuma criança encontrada'}
+          description={unlinkedOnly ? 'Não há crianças sem unidade vinculada no momento.' : 'Tente buscar por outro nome'}
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -147,7 +172,7 @@ export default function ChildrenPage() {
                         <div>
                           <p className="font-semibold truncate" style={{ color: '#1F4352' }}>{child.name}</p>
                           {child.nickname && (
-                            <p className="text-xs truncate" style={{ color: '#98A5AB' }}>"{child.nickname}"</p>
+                            <p className="text-xs truncate" style={{ color: '#98A5AB' }}>&quot;{child.nickname}&quot;</p>
                           )}
                         </div>
                         <ChevronRight
@@ -171,6 +196,22 @@ export default function ChildrenPage() {
                             style={{ background: teaColor.bg, color: teaColor.text }}
                           >
                             TEA {child.autismLevel && `N${child.autismLevel}`}
+                          </span>
+                        )}
+                        {child.school ? (
+                          <span
+                            className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium"
+                            style={{ background: 'rgba(93,154,91,0.12)', color: '#5C9A5B' }}
+                          >
+                            <SchoolIcon className="h-3 w-3" />
+                            {child.school.name}
+                          </span>
+                        ) : (
+                          <span
+                            className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium"
+                            style={{ background: 'rgba(152,165,171,0.15)', color: '#98A5AB' }}
+                          >
+                            Sem unidade
                           </span>
                         )}
                       </div>
