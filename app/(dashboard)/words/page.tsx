@@ -171,7 +171,7 @@ export default function WordsPage() {
       render: (word) => (
         <div>
           <p className="font-bold" style={{ color: '#1F4352' }}>{word.text}</p>
-          <p className="text-xs capitalize mt-0.5" style={{ color: '#98A5AB' }}>{word.category}</p>
+          <p className="text-xs capitalize mt-0.5" style={{ color: '#98A5AB' }}>{CATEGORY_LABELS[word.category] ?? word.category}</p>
         </div>
       ),
     },

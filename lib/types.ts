@@ -231,18 +231,40 @@ export const DIFFICULTY_LABELS: Record<string, string> = {
   hard: 'Difícil',
 };
 
+// Categoria temática (campo `category` do Word) — como o conteúdo é organizado
+// nas telas/filtros. Cobre as categorias de todos os jogos: Vogais/Formação de
+// Palavras/Leitura usam uma categoria fixa cada, Formação de Frases usa a
+// estrutura de comunicação (pessoas, sentimentos, necessidades, etc.).
 export const CATEGORY_LABELS: Record<string, string> = {
+  vowel: 'Vogal',
+  word_formation: 'Formação de palavras',
+  animal: 'Animal',
+  pessoas_familia: 'Pessoas / Família',
+  sentimentos: 'Sentimentos',
+  comida_bebida: 'Comida e bebida',
+  acoes: 'Ações',
+  objetos: 'Objetos',
+  lugares: 'Lugares',
+  necessidades: 'Necessidades',
+  comunicacao: 'Comunicação',
+  brincadeiras: 'Brincadeiras',
+  corpo_higiene: 'Corpo e higiene',
+  palavras_ligacao: 'Palavras de ligação',
+};
+
+// Papel GRAMATICAL da palavra (campo `data.role`) — só existe pra palavras do
+// jogo Formação de Frases, usado pelo motor de validação de frase (não é a
+// mesma coisa que a categoria temática acima, que é o que a criança vê nas abas).
+export const ROLE_LABELS: Record<string, string> = {
   pronome: 'Pronome',
   verbo: 'Verbo',
   acao: 'Ação',
   objeto: 'Objeto',
   alimento: 'Alimento',
   lugar: 'Lugar',
+  sentimento: 'Sentimento',
+  social: 'Social',
   preposicao: 'Preposição',
   artigo: 'Artigo',
   conectivo: 'Conectivo',
-  letra: 'Letra',
-  numero: 'Número',
 };
-
-export const ROLE_LABELS = CATEGORY_LABELS;
