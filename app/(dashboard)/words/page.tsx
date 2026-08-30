@@ -5,12 +5,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { wordsQuery } from '@/lib/queries';
 import { api } from '@/lib/api';
 import type { Word } from '@/lib/types';
-import { GAME_LABELS, DIFFICULTY_LABELS } from '@/lib/types';
+import { GAME_LABELS, DIFFICULTY_LABELS, CATEGORY_LABELS, ROLE_LABELS } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Plus, Pencil, Trash2, BookOpen } from 'lucide-react';
+import { Search, Plus, Pencil, Trash2, BookOpen, Power, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/page-header';
 import { DataTable, type TableColumn } from '@/components/data-table';
@@ -18,17 +18,23 @@ import { ConfirmDialog } from '@/components/confirm-dialog';
 
 const GAME_OPTIONS = Object.entries(GAME_LABELS);
 const DIFFICULTY_OPTIONS = Object.entries(DIFFICULTY_LABELS);
+const CATEGORY_OPTIONS = Object.entries(CATEGORY_LABELS);
 
 const difficultyStyle: Record<string, { bg: string; color: string }> = {
-  EASY:   { bg: '#E4F1E3', color: '#5C9A5B' },
-  MEDIUM: { bg: '#FBEED1', color: '#B98A2D' },
-  HARD:   { bg: '#FBE5E2', color: '#B85048' },
+  easy:   { bg: '#E4F1E3', color: '#5C9A5B' },
+  medium: { bg: '#FBEED1', color: '#B98A2D' },
+  hard:   { bg: '#FBE5E2', color: '#B85048' },
 };
 
 interface WordFormData {
-  text: string; category: string; difficulty: string; imageUrl: string; gameTypes: string[];
+  text: string; category: string; difficulty: string; imageUrl: string; gameTypes: string[]; role: string;
 }
-const EMPTY_FORM: WordFormData = { text: '', category: '', difficulty: 'EASY', imageUrl: '', gameTypes: [] };
+const EMPTY_FORM: WordFormData = { text: '', category: '', difficulty: 'easy', imageUrl: '', gameTypes: [], role: '' };
+
+function toWordPayload(d: WordFormData) {
+  const { role, ...rest } = d;
+  return { ...rest, ...(role ? { data: { role } } : {}) };
+}
 
 function WordForm({ initial, onSave, loading }: { initial: WordFormData; onSave: (d: WordFormData) => void; loading: boolean }) {
   const [form, setForm] = useState<WordFormData>(initial);
@@ -55,7 +61,7 @@ function WordForm({ initial, onSave, loading }: { initial: WordFormData; onSave:
 
       <div className="space-y-1.5">
         <Label className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#305F72' }}>Dificuldade</Label>
-        <Select value={form.difficulty} onValueChange={(v) => setForm({ ...form, difficulty: v ?? 'EASY' })}>
+        <Select value={form.difficulty} onValueChange={(v) => setForm({ ...form, difficulty: v ?? 'easy' })}>
           <SelectTrigger className="h-10 rounded-xl border-0 text-sm w-full" style={{ background: 'rgba(48,95,114,0.04)', boxShadow: 'inset 0 0 0 1.5px rgba(48,95,114,0.15)' }}>
             <SelectValue />
           </SelectTrigger>
@@ -94,6 +100,22 @@ function WordForm({ initial, onSave, loading }: { initial: WordFormData; onSave:
         </div>
       </div>
 
+      {form.gameTypes.includes('PhraseBuilder') && (
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#305F72' }}>Papel na frase</Label>
+          <Select value={form.role} onValueChange={(v) => setForm({ ...form, role: v ?? '' })}>
+            <SelectTrigger className="h-10 rounded-xl border-0 text-sm w-full" style={{ background: 'rgba(48,95,114,0.04)', boxShadow: 'inset 0 0 0 1.5px rgba(48,95,114,0.15)' }}>
+              <SelectValue placeholder="Selecione um papel" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(ROLE_LABELS).map(([value, label]) => (
+                <SelectItem key={value} value={value}>{label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       <button
         className="w-full h-11 rounded-xl text-sm font-semibold text-white transition-opacity disabled:opacity-50 mt-2"
         style={{ background: 'linear-gradient(135deg, #1F4352 0%, #305F72 50%, #567B8B 100%)' }}
@@ -110,19 +132,23 @@ export default function WordsPage() {
   const queryClient = useQueryClient();
   const [search, setSearch]       = useState('');
   const [gameFilter, setGameFilter] = useState('');
+  const [difficultyFilter, setDifficultyFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
   const [editWord, setEditWord]   = useState<Word | null>(null);
 
-  const { data: words = [], isLoading } = useQuery<Word[]>(wordsQuery(search, gameFilter));
+  const {
+    data: words = [], isLoading, isError, refetch,
+  } = useQuery<Word[]>(wordsQuery(search, gameFilter, difficultyFilter, categoryFilter));
 
   const createMutation = useMutation({
-    mutationFn: (d: WordFormData) => api.post('/admin/words', d),
+    mutationFn: (d: WordFormData) => api.post('/admin/words', toWordPayload(d)),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['words'] }); setCreateOpen(false); toast.success('Palavra criada!'); },
     onError: () => toast.error('Erro ao criar.'),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: WordFormData }) => api.put(`/admin/words/${id}`, data),
+    mutationFn: ({ id, data }: { id: string; data: WordFormData }) => api.put(`/admin/words/${id}`, toWordPayload(data)),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['words'] }); setEditWord(null); toast.success('Atualizada!'); },
     onError: () => toast.error('Erro ao atualizar.'),
   });
@@ -131,6 +157,12 @@ export default function WordsPage() {
     mutationFn: (id: string) => api.delete(`/admin/words/${id}`),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['words'] }); toast.success('Removida.'); },
     onError: () => toast.error('Erro ao remover.'),
+  });
+
+  const toggleActiveMutation = useMutation({
+    mutationFn: ({ id, active }: { id: string; active: boolean }) => api.put(`/admin/words/${id}`, { active }),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['words'] }); toast.success('Status atualizado.'); },
+    onError: () => toast.error('Erro ao atualizar status.'),
   });
 
   const columns: TableColumn<Word>[] = [
@@ -149,16 +181,30 @@ export default function WordsPage() {
       headerClassName: 'w-32',
       className: 'w-32',
       render: (word) => {
-        const diff = difficultyStyle[word.difficulty] ?? difficultyStyle.EASY;
+        const diff = difficultyStyle[word.difficulty] ?? difficultyStyle.easy;
         return (
           <span
             className="px-2.5 py-1 rounded-full text-xs font-semibold"
             style={{ background: diff.bg, color: diff.color }}
           >
-            {DIFFICULTY_LABELS[word.difficulty]}
+            {DIFFICULTY_LABELS[word.difficulty] ?? word.difficulty}
           </span>
         );
       },
+    },
+    {
+      header: 'Status',
+      hideOnMobile: true,
+      headerClassName: 'w-24',
+      className: 'w-24',
+      render: (word) => (
+        <span
+          className="px-2.5 py-1 rounded-full text-xs font-semibold"
+          style={word.active ? { background: '#E4F1E3', color: '#5C9A5B' } : { background: '#FBE5E2', color: '#B85048' }}
+        >
+          {word.active ? 'Ativo' : 'Inativo'}
+        </span>
+      ),
     },
     {
       header: 'Jogos',
@@ -179,10 +225,18 @@ export default function WordsPage() {
     },
     {
       header: '',
-      headerClassName: 'w-20',
-      className: 'w-20',
+      headerClassName: 'w-28',
+      className: 'w-28',
       render: (word) => (
         <div className="flex items-center gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={(e) => { e.stopPropagation(); toggleActiveMutation.mutate({ id: word.id, active: !word.active }); }}
+            className="w-8 h-8 rounded-xl flex items-center justify-center transition-colors"
+            style={{ background: word.active ? 'rgba(184,80,72,0.1)' : 'rgba(92,154,91,0.1)' }}
+            title={word.active ? 'Desativar' : 'Ativar'}
+          >
+            <Power className="h-3.5 w-3.5" style={{ color: word.active ? '#B85048' : '#5C9A5B' }} />
+          </button>
           <button
             onClick={(e) => { e.stopPropagation(); setEditWord(word); }}
             className="w-8 h-8 rounded-xl flex items-center justify-center transition-colors"
@@ -240,7 +294,14 @@ export default function WordsPage() {
           <DialogHeader><DialogTitle>Editar palavra</DialogTitle></DialogHeader>
           {editWord && (
             <WordForm
-              initial={{ text: editWord.text, category: editWord.category, difficulty: editWord.difficulty, imageUrl: editWord.imageUrl ?? '', gameTypes: editWord.gameTypes }}
+              initial={{
+                text: editWord.text,
+                category: editWord.category,
+                difficulty: editWord.difficulty,
+                imageUrl: editWord.imageUrl ?? '',
+                gameTypes: editWord.gameTypes,
+                role: editWord.data?.role ?? '',
+              }}
               onSave={(d) => updateMutation.mutate({ id: editWord.id, data: d })}
               loading={updateMutation.isPending}
             />
@@ -273,12 +334,61 @@ export default function WordsPage() {
             ))}
           </SelectContent>
         </Select>
+        <Select value={difficultyFilter} onValueChange={(v) => setDifficultyFilter(v ?? '')}>
+          <SelectTrigger
+            className="w-44 h-10 rounded-xl border-0 bg-white text-sm"
+            style={{ boxShadow: 'var(--shadow-xs)', border: '1px solid rgba(48,95,114,0.1)' }}
+          >
+            <SelectValue placeholder="Filtrar por nível" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">Todos os níveis</SelectItem>
+            {DIFFICULTY_OPTIONS.map(([value, label]) => (
+              <SelectItem key={value} value={value}>{label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={categoryFilter} onValueChange={(v) => setCategoryFilter(v ?? '')}>
+          <SelectTrigger
+            className="w-52 h-10 rounded-xl border-0 bg-white text-sm"
+            style={{ boxShadow: 'var(--shadow-xs)', border: '1px solid rgba(48,95,114,0.1)' }}
+          >
+            <SelectValue placeholder="Filtrar por categoria" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">Todas as categorias</SelectItem>
+            {CATEGORY_OPTIONS.map(([value, label]) => (
+              <SelectItem key={value} value={value}>{label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <DataTable<Word>
         columns={columns}
         data={words}
         isLoading={isLoading}
+        isError={isError}
+        errorContent={
+          <>
+            <div
+              className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
+              style={{ background: 'rgba(184,80,72,0.1)' }}
+            >
+              <AlertTriangle className="h-5 w-5" style={{ color: '#B85048' }} />
+            </div>
+            <p className="text-sm font-semibold mb-1" style={{ color: '#305F72' }}>
+              Não foi possível carregar as palavras.
+            </p>
+            <button
+              onClick={() => refetch()}
+              className="mt-3 px-4 h-9 rounded-xl text-xs font-semibold text-white transition-opacity hover:opacity-90"
+              style={{ background: 'linear-gradient(135deg, #1F4352 0%, #305F72 50%, #567B8B 100%)' }}
+            >
+              Tentar novamente
+            </button>
+          </>
+        }
         keyExtractor={(w) => w.id}
         emptyIcon={BookOpen}
         emptyTitle="Nenhuma palavra encontrada"

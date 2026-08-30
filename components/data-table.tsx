@@ -17,6 +17,8 @@ interface DataTableProps<T> {
   data: T[];
   isLoading?: boolean;
   loadingRows?: number;
+  isError?: boolean;
+  errorContent?: React.ReactNode;
   emptyIcon?: LucideIcon;
   emptyTitle?: string;
   emptyDescription?: string;
@@ -44,6 +46,8 @@ export function DataTable<T>({
   data,
   isLoading = false,
   loadingRows = 5,
+  isError = false,
+  errorContent,
   emptyIcon: EmptyIcon = InboxIcon,
   emptyTitle = 'Nenhum resultado',
   emptyDescription,
@@ -82,6 +86,14 @@ export function DataTable<T>({
               Array.from({ length: loadingRows }).map((_, i) => (
                 <SkeletonRow key={i} cols={columns.length} />
               ))
+            ) : isError ? (
+              <tr>
+                <td colSpan={columns.length}>
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    {errorContent}
+                  </div>
+                </td>
+              </tr>
             ) : data.length === 0 ? (
               <tr>
                 <td colSpan={columns.length}>

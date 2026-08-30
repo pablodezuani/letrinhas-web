@@ -42,11 +42,16 @@ export const parentDetailQuery = (id: string) => ({
   enabled: !!id,
 });
 
-export const wordsQuery = (search = '', gameType = '') => ({
-  queryKey: ['words', search, gameType] as const,
+export const wordsQuery = (search = '', gameType = '', difficulty = '', category = '') => ({
+  queryKey: ['words', search, gameType, difficulty, category] as const,
   queryFn: (): Promise<Word[]> =>
     api.get('/admin/words', {
-      params: { ...(search && { search }), ...(gameType && { gameType }) },
+      params: {
+        ...(search && { search }),
+        ...(gameType && { gameType }),
+        ...(difficulty && { difficulty }),
+        ...(category && { category }),
+      },
     }).then((r) => r.data),
 });
 

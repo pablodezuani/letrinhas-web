@@ -19,10 +19,10 @@ import { PageHeader } from '@/components/page-header';
 import { EmptyState } from '@/components/empty-state';
 
 const gameColors: Record<string, string> = {
-  READING: '#305F72',
-  VOWELS: '#CBAACB',
-  WORD_FORMATION: '#F5A97C',
-  PHRASE_BUILDER: '#6DAED9',
+  ReadingGame: '#305F72',
+  VowelsGame: '#CBAACB',
+  WordFormationGame: '#F5A97C',
+  PhraseBuilder: '#6DAED9',
 };
 
 export default function ReportsPage() {

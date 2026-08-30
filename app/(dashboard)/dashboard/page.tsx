@@ -303,7 +303,7 @@ export default function DashboardPage() {
                     session.maxScore > 0
                       ? Math.round((session.score / session.maxScore) * 100)
                       : null;
-                  const gameIdx = ['READING', 'VOWELS', 'WORD_FORMATION', 'PHRASE_BUILDER'].indexOf(
+                  const gameIdx = ['ReadingGame', 'VowelsGame', 'WordFormationGame', 'PhraseBuilder'].indexOf(
                     session.gameType,
                   );
                   const color = BAR_COLORS[gameIdx >= 0 ? gameIdx : 0];

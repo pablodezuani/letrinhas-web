@@ -167,6 +167,7 @@ export interface Word {
   audioUrl?: string;
   gameTypes: string[];
   active: boolean;
+  data?: { role?: string } | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -218,14 +219,30 @@ export interface DashboardMetrics {
 }
 
 export const GAME_LABELS: Record<string, string> = {
-  READING: 'Leitura',
-  VOWELS: 'Vogais',
-  WORD_FORMATION: 'Formação de Palavras',
-  PHRASE_BUILDER: 'Construção de Frases',
+  ReadingGame: 'Leitura',
+  VowelsGame: 'Vogais',
+  WordFormationGame: 'Formação de Palavras',
+  PhraseBuilder: 'Construção de Frases',
 };
 
 export const DIFFICULTY_LABELS: Record<string, string> = {
-  EASY: 'Fácil',
-  MEDIUM: 'Médio',
-  HARD: 'Difícil',
+  easy: 'Fácil',
+  medium: 'Médio',
+  hard: 'Difícil',
 };
+
+export const CATEGORY_LABELS: Record<string, string> = {
+  pronome: 'Pronome',
+  verbo: 'Verbo',
+  acao: 'Ação',
+  objeto: 'Objeto',
+  alimento: 'Alimento',
+  lugar: 'Lugar',
+  preposicao: 'Preposição',
+  artigo: 'Artigo',
+  conectivo: 'Conectivo',
+  letra: 'Letra',
+  numero: 'Número',
+};
+
+export const ROLE_LABELS = CATEGORY_LABELS;

@@ -11,7 +11,7 @@ import { formatDistanceToNow, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   ArrowLeft, Clock, Trophy, CheckCircle2, GamepadIcon,
-  School as SchoolIcon, GraduationCap, MapPin, ArrowRightLeft,
+  School as SchoolIcon, GraduationCap, MapPin, ArrowRightLeft, XCircle,
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -30,6 +30,7 @@ function SchoolEducatorCard({ id, child }: { id: string; child: ChildDetail['chi
   const queryClient = useQueryClient();
   const [picking, setPicking] = useState(false);
   const [pendingSchool, setPendingSchool] = useState<School | null>(null);
+  const [confirmRemove, setConfirmRemove] = useState(false);
 
   const canManage = user?.role === 'ADMIN';
 
@@ -39,6 +40,7 @@ function SchoolEducatorCard({ id, child }: { id: string; child: ChildDetail['chi
       queryClient.invalidateQueries({ queryKey: ['child-detail', id] });
       setPicking(false);
       setPendingSchool(null);
+      setConfirmRemove(false);
       toast.success('Unidade atualizada.');
     },
     onError: (err: unknown) => {
@@ -54,13 +56,22 @@ function SchoolEducatorCard({ id, child }: { id: string; child: ChildDetail['chi
       <div className="flex items-center justify-between mb-4">
         <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#98A5AB' }}>Unidade &amp; Educadora</p>
         {canManage && child.school && !picking && (
-          <button
-            onClick={() => setPicking(true)}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold"
-            style={{ color: '#305F72' }}
-          >
-            <ArrowRightLeft className="h-3.5 w-3.5" /> Trocar unidade
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setPicking(true)}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold"
+              style={{ color: '#305F72' }}
+            >
+              <ArrowRightLeft className="h-3.5 w-3.5" /> Trocar unidade
+            </button>
+            <button
+              onClick={() => setConfirmRemove(true)}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold"
+              style={{ color: '#B85048' }}
+            >
+              <XCircle className="h-3.5 w-3.5" /> Remover vínculo
+            </button>
+          </div>
         )}
       </div>
 
@@ -146,15 +157,32 @@ function SchoolEducatorCard({ id, child }: { id: string; child: ChildDetail['chi
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={confirmRemove} onOpenChange={setConfirmRemove}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remover vínculo com a unidade?</AlertDialogTitle>
+            <AlertDialogDescription>
+              A educadora responsável atual será removida, já que ela pertence à unidade anterior. A comunicação com a educadora atual deixará de ficar disponível até uma nova ser atribuída.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => updateSchoolMutation.mutate(null)}>
+              Remover vínculo
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
 
 const gameColors: Record<string, string> = {
-  READING: '#305F72',
-  VOWELS: '#CBAACB',
-  WORD_FORMATION: '#F5A97C',
-  PHRASE_BUILDER: '#6DAED9',
+  ReadingGame: '#305F72',
+  VowelsGame: '#CBAACB',
+  WordFormationGame: '#F5A97C',
+  PhraseBuilder: '#6DAED9',
 };
 
 export default function ChildDetailPage() {
@@ -318,14 +346,14 @@ export default function ChildDetailPage() {
                   const color = gameColors[session.gameType] ?? '#305F72';
 
                   return (
-                    <div key={session.id} className="flex items-center justify-between px-6 py-3.5">
-                      <div className="flex items-center gap-3">
+                    <div key={session.id} className="flex items-center justify-between px-6 py-3.5 flex-wrap gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
                         <div
                           className="w-2 h-8 rounded-full flex-shrink-0"
                           style={{ background: color }}
                         />
-                        <div>
-                          <p className="text-sm font-medium" style={{ color: '#305F72' }}>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium truncate" style={{ color: '#305F72' }}>
                             {GAME_LABELS[session.gameType] ?? session.gameType}
                           </p>
                           <p className="text-xs" style={{ color: '#98A5AB' }}>
@@ -334,7 +362,7 @@ export default function ChildDetailPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-5">
+                      <div className="flex items-center gap-5 flex-shrink-0">
                         {pct !== null && (
                           <div className="text-right">
                             <div className="flex items-center gap-1">
